@@ -49,6 +49,23 @@
     return fileName;
 }
 
+- (BOOL)isLogFile:(NSString *)fileName {
+    BOOL hasProperPrefix = [fileName hasPrefix:self.nameprefix];
+    BOOL hasProperSuffix = [fileName hasSuffix:@".log"];
+    BOOL hasProperDate = NO;
+    
+    if (hasProperPrefix && hasProperSuffix) {
+        NSString *dateString = [fileName.stringByDeletingLastPathComponent stringByReplacingOccurrencesOfString:self.nameprefix withString:@""];
+        dateString = [dateString stringByReplacingOccurrencesOfString:@"_" withString:@""];
+        NSDateFormatter *dateFormatter = [self logFileDateFormatter];
+        NSDate *date = [dateFormatter dateFromString:dateString];
+        if (date) {
+            hasProperDate = YES;
+        }
+    }
+    return (hasProperPrefix && hasProperDate && hasProperSuffix);
+}
+
 @end
 
 
@@ -120,6 +137,38 @@
 
 @end
 
+@interface HMFileLogger: DDFileLogger
+
+
+@end
+
+@implementation HMFileLogger
+
+- (instancetype)initWithLogFileManager:(id<DDLogFileManager>)logFileManager{
+    self = [super initWithLogFileManager:logFileManager];
+    if (self) {
+        self.rollingFrequency = 60 * 60 * 24;//一天
+        self.maximumFileSize  = 50 * 1024 * 1024;
+        self.logFileManager.maximumNumberOfLogFiles = 10;
+        self.automaticallyAppendNewlineForCustomFormatters = NO;
+    }
+    return self;
+}
+
+- (BOOL)shouldArchiveRecentLogFileInfo:(DDLogFileInfo *)recentLogFileInfo {
+    //自定义判断日志是否创建
+    NSCalendar* calendar = [NSCalendar currentCalendar];
+    NSDateComponents * creationDateComponents = [calendar components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay fromDate:recentLogFileInfo.creationDate];
+    NSDateComponents * currentDateComponents = [calendar components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay fromDate:[NSDate date]];
+    if (creationDateComponents.year == currentDateComponents.year && creationDateComponents.month == currentDateComponents.month && creationDateComponents.day == currentDateComponents.day) {
+        return NO;
+    } else {
+        return YES;
+    }
+}
+
+@end
+
 
 #ifdef DEBUG
 static const NSUInteger ddLogLevel = DDLogLevelAll;
@@ -137,12 +186,8 @@ static const NSUInteger ddLogLevel = DDLogLevelError | DDLogFlagWarning | DDLogF
     HMLumberjackFileManager *fileManager = [[HMLumberjackFileManager alloc] initWithLogsDirectory:cacheDirectory];
     fileManager.nameprefix = nameprefix;
     fileManager.pathComponent = @"log";
-    DDFileLogger *fileLogger = [[DDFileLogger alloc] initWithLogFileManager:fileManager];
+    HMFileLogger *fileLogger = [[HMFileLogger alloc] initWithLogFileManager:fileManager];
     fileLogger.logFormatter = logFormatter;
-    fileLogger.rollingFrequency = 60 * 60 * 24;
-    fileLogger.maximumFileSize  = 50 * 1024 * 1024;
-    fileLogger.logFileManager.maximumNumberOfLogFiles = 10;
-    fileLogger.automaticallyAppendNewlineForCustomFormatters = NO;
     [DDLog addLogger:fileLogger];
 #if DEBUG
     DDTTYLogger *tyLogger = [DDTTYLogger sharedInstance];
