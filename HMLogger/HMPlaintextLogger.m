@@ -188,7 +188,7 @@ static const NSUInteger ddLogLevel = DDLogLevelError | DDLogFlagWarning | DDLogF
     fileManager.pathComponent = @"log";
     HMFileLogger *fileLogger = [[HMFileLogger alloc] initWithLogFileManager:fileManager];
     fileLogger.logFormatter = logFormatter;
-    [DDLog addLogger:fileLogger];
+    [DDLog addLogger:fileLogger withLevel:ddLogLevel];
 #if DEBUG
     DDTTYLogger *tyLogger = [DDTTYLogger sharedInstance];
     tyLogger.logFormatter = logFormatter;
