@@ -114,8 +114,6 @@
     logString = [logString stringByAppendingFormat:@"[%@][%d,%@]", dateStr, info.processIdentifier, logMessage.threadID];
     if (logMessage.tag) {
         logString = [logString stringByAppendingFormat:@"[%@]",logMessage.tag];
-    } else {
-        logString = [logString stringByAppendingString:@"[]"];
     }
     
     logString = [logString stringByAppendingString:@"["];
@@ -128,7 +126,6 @@
         lastString = [lastString stringByReplacingOccurrencesOfString:@":]" withString:@""];
         logString = [logString stringByAppendingFormat:@" %@,",lastString];
     }
-    logString = [logString stringByAppendingFormat:@" %lu",(unsigned long)logMessage.line];
     logString = [logString stringByAppendingString:@"]"];
     
     logString = [logString stringByAppendingFormat:@"[%@\n",logMessage.message];
