@@ -124,7 +124,7 @@
         NSArray *tmpArray = [logMessage.function componentsSeparatedByString:@" "];
         NSString *lastString = [tmpArray lastObject];
         lastString = [lastString stringByReplacingOccurrencesOfString:@":]" withString:@""];
-        logString = [logString stringByAppendingFormat:@" %@,",lastString];
+        logString = [logString stringByAppendingFormat:@" %@",lastString];
     }
     logString = [logString stringByAppendingString:@"]"];
     
