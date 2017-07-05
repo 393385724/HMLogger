@@ -69,6 +69,13 @@ static NSString * const HMLogDirectoryName              = @"log";
     self.logDirectory = logDirectory;
     
     //旧log数据迁移
+    BOOL isDirectory = YES;
+    if ([[NSFileManager defaultManager] fileExistsAtPath:self.logDirectory isDirectory:&isDirectory]) {
+        isDirectory = NO;
+    }
+    if (!isDirectory) {
+        [[NSFileManager defaultManager] createDirectoryAtPath:self.logDirectory withIntermediateDirectories:YES attributes:nil error:nil];
+    }
     NSArray *contentsOfDirectory = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:cacheDirectory error:nil];
     for (NSString *fileName in contentsOfDirectory) {
         NSString *filePath = [cacheDirectory stringByAppendingPathComponent:fileName];
