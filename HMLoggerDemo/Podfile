@@ -6,5 +6,5 @@ workspace 'HMLoggerDemo'
 target :HMLoggerDemo do
   xcodeproj 'HMLoggerDemo'
     pod 'ICTextView', '~> 2.0.1'
-    pod 'CocoaLumberjack', '~> 3.2.0'
+    pod 'CocoaLumberjack', '~> 3.2.1'
 end

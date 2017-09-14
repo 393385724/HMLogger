@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|  
 	s.name             = "HMLogger"  
-	s.version          = "2.0.5"  
+	s.version          = "2.0.6"  
 	s.summary          = "simple, pretty and powerful logger for iOS with piker、viewer、console"  
 	s.homepage         = "https://github.com/393385724/HMLogger"  
 	s.license          = 'MIT'  
@@ -20,6 +20,6 @@ Pod::Spec.new do |s|
 	s.libraries = 'z','stdc++'
 	s.user_target_xcconfig = { 'ENABLE_BITCODE' => 'NO' }
 	s.dependency 'ICTextView', '~> 2.0.1'
-	s.dependency 'CocoaLumberjack', '~> 3.2.0'
+	s.dependency 'CocoaLumberjack', '~> 3.2.1'
 
 end  

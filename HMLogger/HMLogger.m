@@ -103,6 +103,9 @@ static NSString * const HMLogDirectoryName              = @"log";
               format:(NSString *)format, ...{
     va_list ap;
     va_start (ap, format);
+    if (self.isConsoleShow) {
+        [self.consoleView appendLog:[[NSString alloc] initWithFormat:format arguments:ap]];
+    }
     if (self.encrypt) {
         [HMEncryptLogger writeLogFile:file function:function line:line level:level tag:tag format:format args:ap];
     } else {

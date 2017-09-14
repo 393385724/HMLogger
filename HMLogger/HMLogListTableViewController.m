@@ -8,14 +8,13 @@
 
 #import "HMLogListTableViewController.h"
 #import "HMLogDetailViewController.h"
-#import "HMLogListTableViewCell.h"
 
 NSString *const DDCellReuseIdentifier = @"HMLogListTableViewCellReuseIdentifier";
 
 #ifdef __IPHONE_8_0
-@interface HMLogListTableViewController ()<HMLogListTableViewCellDelegate,HMLogDetailViewControllerDelegate>
+@interface HMLogListTableViewController ()<HMLogDetailViewControllerDelegate>
 #else
-@interface HMLogListTableViewController ()<HMLogListTableViewCellDelegate,HMLogDetailViewControllerDelegate,UIAlertViewDelegate>
+@interface HMLogListTableViewController ()<HMLogDetailViewControllerDelegate,UIAlertViewDelegate>
 #endif
 
 @end
@@ -38,7 +37,7 @@ NSString *const DDCellReuseIdentifier = @"HMLogListTableViewCellReuseIdentifier"
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"完成" style:UIBarButtonItemStylePlain target:self action:@selector(rightButtonAction)];
     self.navigationItem.rightBarButtonItem.enabled = NO;
     
-    [self.tableView registerNib:[UINib nibWithNibName:@"HMLogListTableViewCell" bundle:nil] forCellReuseIdentifier:DDCellReuseIdentifier];
+    [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:DDCellReuseIdentifier];
     self.tableView.rowHeight = 50;
     self.tableView.tableFooterView = [[UIView alloc] init];
     
@@ -66,13 +65,14 @@ NSString *const DDCellReuseIdentifier = @"HMLogListTableViewCellReuseIdentifier"
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (void)updateCell:(HMLogListTableViewCell *)cell indexPath:(NSIndexPath *)indexPath{
+- (void)updateCell:(UITableViewCell *)cell indexPath:(NSIndexPath *)indexPath{
     NSString *name = self.dataSoure[indexPath.row];
-    BOOL isSelected = [_selectedLogSet containsObject:name.stringByDeletingPathExtension];
     if ([name.pathExtension hasPrefix:@"hms"]) {
         name = [name.stringByDeletingPathExtension stringByAppendingString:@"㊙️"];
     }
-    [cell updateWithTitle:name.stringByDeletingPathExtension isSelected:isSelected];
+    cell.textLabel.text = name.stringByDeletingPathExtension;
+    BOOL isSelected = [_selectedLogSet containsObject:name];
+    ((UIButton *)(cell.accessoryView)).selected = isSelected;
 }
 
 #pragma mark -  Private Methods
@@ -97,6 +97,16 @@ NSString *const DDCellReuseIdentifier = @"HMLogListTableViewCellReuseIdentifier"
     _deleteIndexPath = nil;
 }
 
+#pragma mark - ButtonAction
+
+- (void)accessoryButtonAction:(UIButton *)button{
+    NSString *name = self.dataSoure[button.tag];
+    BOOL hasContentName = [_selectedLogSet containsObject:name];
+    hasContentName ? [_selectedLogSet removeObject:name] : [_selectedLogSet addObject:name];
+    self.navigationItem.rightBarButtonItem.enabled = [_selectedLogSet count] > 0 ? YES : NO;
+    [self.tableView reloadData];
+}
+
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -108,8 +118,17 @@ NSString *const DDCellReuseIdentifier = @"HMLogListTableViewCellReuseIdentifier"
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    HMLogListTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:DDCellReuseIdentifier forIndexPath:indexPath];
-    cell.delegate = self;
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:DDCellReuseIdentifier forIndexPath:indexPath];
+    if (cell) {
+        UIButton *button = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 25, 25)];
+        [button setImage:[UIImage imageNamed:@"ddlog_check_icon_normal"] forState:UIControlStateNormal];
+        [button setImage:[UIImage imageNamed:@"ddlog_check_icon_selected"] forState:UIControlStateSelected];
+        [button addTarget:self
+                   action:@selector(accessoryButtonAction:)
+         forControlEvents:UIControlEventTouchUpInside];
+        cell.accessoryView = button;
+    }
+    cell.accessoryView.tag = indexPath.row;
     [self updateCell:cell indexPath:indexPath];
     return cell;
 }
@@ -174,21 +193,11 @@ NSString *const DDCellReuseIdentifier = @"HMLogListTableViewCellReuseIdentifier"
 }
 #endif
 
-#pragma mark - HMLogListTableViewCellDelegate
-
-- (void)tableViewCell:(HMLogListTableViewCell *)cell buttonDidSelected:(BOOL)isSelected{
-    NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
-    NSString *name = self.dataSoure[indexPath.row];
-    BOOL hasContentName = [_selectedLogSet containsObject:name];
-    hasContentName ? [_selectedLogSet removeObject:name] : [_selectedLogSet addObject:name];
-    self.navigationItem.rightBarButtonItem.enabled = [_selectedLogSet count] > 0 ? YES : NO;
-}
-
 #pragma mark - HMLogDetailViewControllerDelegate
 
 - (void)logDetailViewControllerDidSelectedWithIndexPath:(NSIndexPath *)indexPath{
     NSString *name = self.dataSoure[indexPath.row];
-    HMLogListTableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
     BOOL hasContentName = [_selectedLogSet containsObject:name];
     hasContentName ? [_selectedLogSet removeObject:name] : [_selectedLogSet addObject:name];
     [self updateCell:cell indexPath:indexPath];
